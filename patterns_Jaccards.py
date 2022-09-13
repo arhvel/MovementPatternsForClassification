@@ -21,7 +21,7 @@ h_id = list(hookers['id'])
 Analysed_h = []
 Analysed_w = []
 LCCpatterns = []
-sensorFolders =  sorted([i for i in glob.glob('.../GameLevel_sResultMatrix_LCCspm_Mpatterns/*')])
+sensorFolders =  sorted([i for i in glob.glob('/home/adeyem01/Documents/Study3/Game_PlayerLevel_patternbased/GameLevel_sResultMatrix_LCCspm_Mpatterns/*')])
 sensorFoldersLCC = sensorFolders[3:]
 
 for folder in sensorFoldersLCC:
@@ -150,18 +150,18 @@ PatternsFrequency_w_APR = pd.DataFrame(PatternsFrequency_w.items(), columns = ['
 PatternsFrequency_w_APR = PatternsFrequency_w_APR.sort_values('AbsoluteSupport', ascending=False)
 PatternsFrequency_w_APR = PatternsFrequency_w_APR[PatternsFrequency_w_APR['AbsoluteSupport'] != 0 ]
 
-# Jaccard Similarity Score Definition
+
 def jaccard(list1, list2):
     intersection = len(list(set(list1).intersection(list2)))
     union = (len(set(list1)) + len(set(list2))) - intersection
     return float(intersection)/ union
 
-# Compute Jaccard Similarity
+# Calculate Jaccard Similarity
 LCC_SMP = jaccard(LCCpatterns_unique, SMPpatterns_unique)
 LCC_APR = jaccard(LCCpatterns_unique, APRpatterns_unique)
 SMP_APR = jaccard(SMPpatterns_unique, APRpatterns_unique)
 
-# Compute Jaccard Difference and collate results into csv
+# Calculate Jaccard Difference and collate results into csv
 JaccardScores =[]
 LCC__SMP = ('LCC_SMP',LCC_SMP, 1-LCC_SMP)
 LCC__APR = ('LCC_APR',LCC_APR, 1-LCC_APR)
@@ -173,11 +173,99 @@ JaccardScores.append(SMP__APR)
 
 ResultFrame = pd.DataFrame(JaccardScores, columns = ['Method', 'Jaccard_Sim', 'Jaccard_Diff'])
 
-#ResultFrame.to_csv('JaccardScoresforPatternsPerAlgo.csv', index = False)
+ResultFrame.to_csv('JaccardScoresforPatternsPerAlgo.csv', index = False)
+
+# Overlap pattern Framework_level
+
+lcc_glbDF = pd.concat([PatternsFrequency_h_LCC,PatternsFrequency_w_LCC], axis=0).sort_values('AbsoluteSupport', ascending=False).reset_index().drop('index',axis=1)
+PatternsFrequencyDF_lcc_ = dict.fromkeys(LCCpatterns_unique,0)
+for i in range(len(lcc_glbDF)):
+    diction = lcc_glbDF.iloc[[i]].set_index('Sequences')['AbsoluteSupport'].to_dict()
+    
+    for key, value in diction.items():
+        PatternsFrequencyDF_lcc_[key] +=value
+PatternsFrequencyDF_lcc = pd.DataFrame(PatternsFrequencyDF_lcc_.items(), columns = ['Sequences', 'AbsoluteSupport'] ) 
+PatternsFrequencyDF_lcc = PatternsFrequencyDF_lcc.sort_values('AbsoluteSupport', ascending=False).reset_index().drop('index',axis=1)
+PatternsFrequencyDF_lcc = PatternsFrequencyDF_lcc[PatternsFrequencyDF_lcc['AbsoluteSupport'] != 0 ]
+
+lcc_glbDF_top50= list(PatternsFrequencyDF_lcc['Sequences'][:50])
+lcc_glbDF_bot50 = list(PatternsFrequencyDF_lcc['Sequences'][len(PatternsFrequencyDF_lcc)-50:])
 
 
-# Overlapping Patterns and Visualization
-            #Hookers
+smp_glbDF = pd.concat([PatternsFrequency_h_SMP,PatternsFrequency_w_SMP], axis=0).sort_values('AbsoluteSupport', ascending=False)
+PatternsFrequencyDF_smp_ = dict.fromkeys(SMPpatterns_unique,0)
+for i in range(len(smp_glbDF)):
+    diction = smp_glbDF.iloc[[i]].set_index('Sequences')['AbsoluteSupport'].to_dict()
+    
+    for key, value in diction.items():
+        PatternsFrequencyDF_smp_[key] +=value
+PatternsFrequencyDF_smp = pd.DataFrame(PatternsFrequencyDF_smp_.items(), columns = ['Sequences', 'AbsoluteSupport'] ) 
+PatternsFrequencyDF_smp = PatternsFrequencyDF_smp.sort_values('AbsoluteSupport', ascending=False).reset_index().drop('index',axis=1)
+PatternsFrequencyDF_smp = PatternsFrequencyDF_smp[PatternsFrequencyDF_smp['AbsoluteSupport'] != 0 ]
+
+smp_glbDF_top50= list(PatternsFrequencyDF_smp['Sequences'][:50])
+smp_glbDF_bot50 = list(PatternsFrequencyDF_smp['Sequences'][len(PatternsFrequencyDF_smp)-50:])
+
+
+apr_glbDF = pd.concat([PatternsFrequency_h_APR,PatternsFrequency_w_APR], axis=0).sort_values('AbsoluteSupport', ascending=False)
+PatternsFrequencyDF_apr_ = dict.fromkeys(APRpatterns_unique,0)
+for i in range(len(apr_glbDF)):
+    diction = apr_glbDF.iloc[[i]].set_index('Sequences')['AbsoluteSupport'].to_dict()
+    
+    for key, value in diction.items():
+        PatternsFrequencyDF_apr_[key] +=value
+PatternsFrequencyDF_apr = pd.DataFrame(PatternsFrequencyDF_apr_.items(), columns = ['Sequences', 'AbsoluteSupport'] ) 
+PatternsFrequencyDF_apr = PatternsFrequencyDF_apr.sort_values('AbsoluteSupport', ascending=False).reset_index().drop('index',axis=1)
+PatternsFrequencyDF_apr = PatternsFrequencyDF_apr[PatternsFrequencyDF_apr['AbsoluteSupport'] != 0 ]
+
+apr_glbDF_top50= list(PatternsFrequencyDF_apr['Sequences'][:50])
+apr_glbDF_bot50 = list(PatternsFrequencyDF_apr['Sequences'][len(PatternsFrequencyDF_apr)-50:])
+
+#                   IDENTIFICATION  of OVERLAPPED pattern across FRAMEWORKS
+#               LCC      vs.      SMP
+ov_glb_lccsmp_top = list(set(lcc_glbDF_top50).intersection(set(smp_glbDF_top50)))
+ov_glb_lccsmp_bot = list(set(lcc_glbDF_bot50).intersection(set(smp_glbDF_bot50)))
+
+ov_glb_lccsmp_top_DF1 = PatternsFrequencyDF_lcc[PatternsFrequencyDF_lcc['Sequences' ].isin(ov_glb_lccsmp_top)]
+ov_glb_lccsmp_top_DF2 = PatternsFrequencyDF_smp[PatternsFrequencyDF_smp['Sequences' ].isin(ov_glb_lccsmp_top)]
+ov_glb_lccsmp_merged = ov_glb_lccsmp_top_DF1.copy().sort_values('Sequences', ascending = True).reset_index().drop('index', axis = 1)
+ov_glb_lccsmp_merged['SMP_support'] = ov_glb_lccsmp_top_DF2.sort_values('Sequences', ascending = True).reset_index().drop('index', axis = 1)['AbsoluteSupport']
+ov_glb_lccsmp_merged = ov_glb_lccsmp_merged.sort_values('AbsoluteSupport', ascending = False).reset_index().drop('index', axis = 1)
+ 
+word_cloud_dict1= ov_glb_lccsmp_top_DF1.set_index('Sequences')['AbsoluteSupport'].to_dict()
+word_cloud_dict2= ov_glb_lccsmp_top_DF2.set_index('Sequences')['AbsoluteSupport'].to_dict()
+wordcloud1 = WordCloud(background_color = 'white', width = 2000, height = 1000).generate_from_frequencies(word_cloud_dict1)
+wordcloud2 = WordCloud(background_color = 'white', width = 2000, height = 1000).generate_from_frequencies(word_cloud_dict2)
+plt.figure(figsize=(9,5))
+plt.imshow(wordcloud1)
+plt.axis("off")
+plt.show()
+plt.close()
+
+#               LCC      vs.      APR
+ov_glb_lccapr_top = list(set(lcc_glbDF_top50).intersection(set(apr_glbDF_top50)))
+ov_glb_lccapr_bot = list(set(lcc_glbDF_bot50).intersection(set(apr_glbDF_bot50)))
+
+ov_glb_lccapr_top_DF1 = PatternsFrequencyDF_lcc[PatternsFrequencyDF_lcc['Sequences' ].isin(ov_glb_lccapr_top)]
+ov_glb_lccapr_top_DF2 = PatternsFrequencyDF_apr[PatternsFrequencyDF_apr['Sequences' ].isin(ov_glb_lccapr_top)]
+ov_glb_lccapr_merged = ov_glb_lccapr_top_DF1.copy().sort_values('Sequences', ascending = True).reset_index().drop('index', axis = 1)
+ov_glb_lccapr_merged['APR_support'] = ov_glb_lccapr_top_DF2.sort_values('Sequences', ascending = True).reset_index().drop('index', axis = 1)['AbsoluteSupport']
+ov_glb_lccapr_merged = ov_glb_lccapr_merged.sort_values('AbsoluteSupport', ascending = False).reset_index().drop('index', axis = 1)
+
+#               SMP      vs.      APR
+ov_glb_smpapr_top = list(set(smp_glbDF_top50).intersection(set(apr_glbDF_top50)))
+ov_glb_smpapr_bot = list(set(smp_glbDF_bot50).intersection(set(apr_glbDF_bot50)))
+
+ov_glb_smpapr_top_DF1 = PatternsFrequencyDF_smp[PatternsFrequencyDF_smp['Sequences' ].isin(ov_glb_smpapr_top)]
+ov_glb_smpapr_top_DF2 = PatternsFrequencyDF_apr[PatternsFrequencyDF_apr['Sequences' ].isin(ov_glb_smpapr_top)]
+ov_glb_smpapr_merged = ov_glb_smpapr_top_DF1.copy().sort_values('Sequences', ascending = True).reset_index().drop('index', axis = 1)
+ov_glb_smpapr_merged['APR_support'] = ov_glb_smpapr_top_DF2.sort_values('Sequences', ascending = True).reset_index().drop('index', axis = 1)['AbsoluteSupport']
+ov_glb_smpapr_merged = ov_glb_smpapr_merged.sort_values('AbsoluteSupport', ascending = False).reset_index().drop('index', axis = 1)
+
+
+
+# Overlapping Patterns and Visualization POSITIONAL GROUPS
+                                                        #Hookers
 LCCpatterns_hk = list(PatternsFrequency_h_LCC['Sequences'])
 LCCpatterns_hk_top50 = LCCpatterns_hk[:50]
 LCCpatterns_hk_bot50 = LCCpatterns_hk[len(LCCpatterns_hk)-50:]
@@ -189,6 +277,7 @@ SMPpatterns_hk_bot50 = SMPpatterns_hk[len(SMPpatterns_hk)-50:]
 APRpatterns_hk = list(PatternsFrequency_h_APR['Sequences'])
 APRpatterns_hk_top50 = APRpatterns_hk[:50]
 APRpatterns_hk_bot50 = APRpatterns_hk[len(APRpatterns_hk)-50:]
+
 
 #Visualization LCC vs. SMP
 #TOP 50
@@ -210,6 +299,7 @@ plt.figure(figsize=(9,5))
 plt.imshow(wordcloud2)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 #BOTTOM 50
@@ -230,12 +320,14 @@ plt.figure(figsize=(9,5))
 plt.imshow(wordcloud1)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 plt.figure(figsize=(9,5))
 plt.imshow(wordcloud2)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 #BOTTOM 50
@@ -256,12 +348,14 @@ plt.figure(figsize=(9,5))
 plt.imshow(wordcloud1)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 plt.figure(figsize=(9,5))
 plt.imshow(wordcloud2)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 #BOTTOM 50
@@ -295,12 +389,14 @@ plt.figure(figsize=(9,5))
 plt.imshow(wordcloud1)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 plt.figure(figsize=(9,5))
 plt.imshow(wordcloud2)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 #BOTTOM 50
@@ -321,12 +417,14 @@ plt.figure(figsize=(9,5))
 plt.imshow(wordcloud1)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 plt.figure(figsize=(9,5))
 plt.imshow(wordcloud2)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 #BOTTOM 50
@@ -346,12 +444,14 @@ plt.figure(figsize=(9,5))
 plt.imshow(wordcloud1)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 plt.figure(figsize=(9,5))
 plt.imshow(wordcloud2)
 plt.axis("off")
 plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
 plt.close()
 
 #BOTTOM 50
