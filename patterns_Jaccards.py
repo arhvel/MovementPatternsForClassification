@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Nov 29 17:04:47 2021
+Modified on Mon Oct 24 13:13:01 2022
 
 @author: adeyem01
 """
@@ -13,6 +14,9 @@ from itertools import chain
 import matplotlib.pyplot as plt
 from PIL import Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+
+from collections import Counter
+from itertools import chain
 
 hookers = pd.read_csv("all_hookersList.csv")
 h_id = list(hookers['id'])
@@ -264,7 +268,7 @@ ov_glb_smpapr_merged = ov_glb_smpapr_merged.sort_values('AbsoluteSupport', ascen
 
 
 
-# Overlapping Patterns and Visualization POSITIONAL GROUPS
+# Overlapping Patterns and Visualization
                                                         #Hookers
 LCCpatterns_hk = list(PatternsFrequency_h_LCC['Sequences'])
 LCCpatterns_hk_top50 = LCCpatterns_hk[:50]
@@ -456,3 +460,89 @@ plt.close()
 
 #BOTTOM 50
 Overlap = list(set(SMPpatterns_wg_bot50).intersection(set(APRpatterns_wg_bot50)))
+
+
+# OVERLAP between positional group within ALGO
+                    #   LCCSPM
+
+Overlap = list(set(LCCpatterns_hk).intersection(set(LCCpatterns_wg)))
+Overlap_DF1 = PatternsFrequency_h_LCC[PatternsFrequency_h_LCC['Sequences' ].isin(Overlap)]
+Overlap_DF2 = PatternsFrequency_w_LCC[PatternsFrequency_w_LCC['Sequences' ].isin(Overlap)]
+
+word_cloud_dict1= Overlap_DF1.set_index('Sequences')['AbsoluteSupport'].to_dict()
+word_cloud_dict2= Overlap_DF2.set_index('Sequences')['AbsoluteSupport'].to_dict()
+wordcloud1 = WordCloud(background_color = 'white', width = 2000, height = 1000).generate_from_frequencies(word_cloud_dict1)
+wordcloud2 = WordCloud(background_color = 'white', width = 2000, height = 1000).generate_from_frequencies(word_cloud_dict2)
+plt.figure(figsize=(9,5))
+plt.imshow(wordcloud1)
+plt.axis("off")
+plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
+plt.close()
+
+plt.figure(figsize=(9,5))
+plt.imshow(wordcloud2)
+plt.axis("off")
+plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
+plt.close()
+
+LCC_hk_only = [pat for pat in LCCpatterns_hk if pat not in LCCpatterns_wg]
+LCC_wg_only = [pat for pat in LCCpatterns_wg if pat not in LCCpatterns_hk]
+
+'eef' in 'eefee'
+
+
+                    #   SMP
+
+Overlap = list(set(SMPpatterns_hk).intersection(set(SMPpatterns_wg)))
+Overlap_DF1 = PatternsFrequency_h_SMP[PatternsFrequency_h_SMP['Sequences' ].isin(Overlap)]
+Overlap_DF2 = PatternsFrequency_w_SMP[PatternsFrequency_w_SMP['Sequences' ].isin(Overlap)]
+
+word_cloud_dict1= Overlap_DF1.set_index('Sequences')['AbsoluteSupport'].to_dict()
+word_cloud_dict2= Overlap_DF2.set_index('Sequences')['AbsoluteSupport'].to_dict()
+wordcloud1 = WordCloud(background_color = 'white', width = 2000, height = 1000).generate_from_frequencies(word_cloud_dict1)
+wordcloud2 = WordCloud(background_color = 'white', width = 2000, height = 1000).generate_from_frequencies(word_cloud_dict2)
+plt.figure(figsize=(9,5))
+plt.imshow(wordcloud1)
+plt.axis("off")
+plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
+plt.close()
+
+plt.figure(figsize=(9,5))
+plt.imshow(wordcloud2)
+plt.axis("off")
+plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
+plt.close()
+
+SMP_hk_only = [pat for pat in SMPpatterns_hk if pat not in SMPpatterns_wg]
+SMP_wg_only = [pat for pat in SMPpatterns_wg if pat not in SMPpatterns_hk]
+
+             #   APR
+
+Overlap = list(set(APRpatterns_hk).intersection(set(APRpatterns_wg)))
+Overlap_DF1 = PatternsFrequency_h_APR[PatternsFrequency_h_APR['Sequences' ].isin(Overlap)]
+Overlap_DF2 = PatternsFrequency_w_APR[PatternsFrequency_w_APR['Sequences' ].isin(Overlap)]
+
+word_cloud_dict1= Overlap_DF1.set_index('Sequences')['AbsoluteSupport'].to_dict()
+word_cloud_dict2= Overlap_DF2.set_index('Sequences')['AbsoluteSupport'].to_dict()
+wordcloud1 = WordCloud(background_color = 'white', width = 2000, height = 1000).generate_from_frequencies(word_cloud_dict1)
+wordcloud2 = WordCloud(background_color = 'white', width = 2000, height = 1000).generate_from_frequencies(word_cloud_dict2)
+plt.figure(figsize=(9,5))
+plt.imshow(wordcloud1)
+plt.axis("off")
+plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
+plt.close()
+
+plt.figure(figsize=(9,5))
+plt.imshow(wordcloud2)
+plt.axis("off")
+plt.show()
+#plt.savefig('FIFA_APR.png', bbox_inches='tight')
+plt.close()
+
+APR_hk_only = [pat for pat in APRpatterns_hk if pat not in APRpatterns_wg]
+APR_wg_only = [pat for pat in APRpatterns_wg if pat not in APRpatterns_hk]
